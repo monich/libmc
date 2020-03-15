@@ -1,0 +1,11 @@
+build
+results
+*.gcov
+*~
+debian/*.log
+debian/*.substvars
+debian/*.debhelper
+debian/files
+debian/libmc-dev
+debian/libmc
+debian/tmp

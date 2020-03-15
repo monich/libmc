@@ -1,0 +1,3 @@
+debian/tmp/usr/lib/libmc.so usr/lib
+include/*.h usr/include/mc
+build/libmc.pc usr/lib/pkgconfig

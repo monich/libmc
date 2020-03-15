@@ -1,0 +1,18 @@
+Source: libmc
+Section: libs
+Priority: optional
+Maintainer: Slava Monich <slava@monich.com>
+Build-Depends: debhelper (>= 7), libglib2.0-dev (>= 2.0)
+Standards-Version: 3.8.4
+
+Package: libmc
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Library for parsing mobile codes
+
+Package: libmc-dev
+Section: libdevel
+Architecture: any
+Depends: libmc (= ${binary:Version}), ${misc:Depends}
+Description: Development files for libmc
