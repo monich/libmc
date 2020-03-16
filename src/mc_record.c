@@ -169,6 +169,22 @@ mc_block_peek(
 
 static
 gboolean
+mc_block_equals(
+    const McBlock* blk,
+    const char* str)
+{
+    const guint8* bp = blk->ptr;
+    const guint8* sp = (guint8*)str;
+    while (bp < blk->end && *sp) {
+        if (*sp++ != *bp++) {
+            return FALSE;
+        }
+    }
+    return bp == blk->end && !*sp;
+}
+
+static
+gboolean
 mc_block_skip_spaces(
     McBlock* blk)
 {
@@ -350,7 +366,8 @@ static
 void
 mc_record_parse_value(
     McBlock* blk,
-    GByteArray* buf)
+    GByteArray* buf,
+    gboolean url_block)
 {
     gboolean backslash = FALSE;
     g_byte_array_set_size(buf, 0);
@@ -373,7 +390,9 @@ mc_record_parse_value(
             }
             g_byte_array_append(buf, c, n);
         } else {
-            switch (mc_block_peek(blk)) {
+            const char p = mc_block_peek(blk);
+
+            switch (p) {
             case '\\':
                 if (!backslash) {
                     backslash = TRUE;
@@ -382,7 +401,12 @@ mc_record_parse_value(
                 }
                 /* no break */
             case ',': case ';': case ':':
-                if (backslash) {
+                /*
+                 * As a special case, allow unescaped ':' in URL blocks.
+                 * According to those specs which I found, that seems to
+                 * be illegal but people do it anyway, so let's allow it.
+                 */
+                if (backslash || (p == ':' && url_block)) {
                     backslash = FALSE;
                     g_byte_array_append(buf, blk->ptr, 1);
                     blk->ptr++;
@@ -424,11 +448,12 @@ mc_record_parse_property(
         name.end = blk->ptr;
         if (name.end > name.ptr && mc_block_peek(blk) == ':') {
             McProperty* prop;
+            const gboolean url_block = mc_block_equals(&name, "URL");
 
             blk->ptr++; /* Eat the separator */
             g_ptr_array_set_size(values, 0);
             while (!mc_block_end(blk)) {
-                mc_record_parse_value(blk, buf);
+                mc_record_parse_value(blk, buf, url_block);
                 if (buf->len > 0) {
                     char* val = g_malloc(buf->len + 1);
 
