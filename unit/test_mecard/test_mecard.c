@@ -98,6 +98,93 @@ test_basic(
     mecard_free(mecard);
 }
 
+/* UnknownProperty */
+
+static
+void
+test_unknown_property(
+    void)
+{
+    MeCard* mecard = mecard_parse("MECARD:"
+        "N:Doe,John;"
+        "TEL:13035551212;"
+        "EMAIL:john.doe@example.com;"
+        "FOO:bar;;"); /* This one is ignored */
+
+    g_assert(mecard);
+
+    g_assert(mecard->n);
+    g_assert_cmpstr(mecard->n[0], == ,"Doe");
+    g_assert_cmpstr(mecard->n[1], == ,"John");
+    g_assert(!mecard->n[2]);
+
+    g_assert(mecard->tel);
+    g_assert_cmpstr(mecard->tel[0], == ,"13035551212");
+    g_assert(!mecard->tel[1]);
+
+    g_assert(mecard->email);
+    g_assert_cmpstr(mecard->email[0], == ,"john.doe@example.com");
+    g_assert(!mecard->email[1]);
+
+    mecard_free(mecard);
+}
+
+/* EmptyValue */
+
+static
+void
+test_empty_value(
+    void)
+{
+    MeCard* mecard = mecard_parse("MECARD:"
+        "N:Doe,John;"
+        "TEL:13035551212;"
+        "EMAIL:;;");
+
+    g_assert(mecard);
+
+    g_assert(mecard->n);
+    g_assert_cmpstr(mecard->n[0], == ,"Doe");
+    g_assert_cmpstr(mecard->n[1], == ,"John");
+    g_assert(!mecard->n[2]);
+
+    g_assert(mecard->tel);
+    g_assert_cmpstr(mecard->tel[0], == ,"13035551212");
+    g_assert(!mecard->tel[1]);
+
+    g_assert(!mecard->email);
+    mecard_free(mecard);
+}
+
+/* MultiValues */
+
+static
+void
+test_multi_values(
+    void)
+{
+    MeCard* mecard = mecard_parse("MECARD:"
+        "EMAIL:;" /* The order doesn't matter */
+        "N:John Doe;"
+        "TEL:13035551212;"
+        "TEL:;"
+        "TEL:13035551213;;");
+
+    g_assert(mecard);
+
+    g_assert(mecard->n);
+    g_assert_cmpstr(mecard->n[0], == ,"John Doe");
+    g_assert(!mecard->n[1]);
+
+    g_assert(mecard->tel);
+    g_assert_cmpstr(mecard->tel[0], == ,"13035551212");
+    g_assert_cmpstr(mecard->tel[1], == ,"13035551213");
+    g_assert(!mecard->tel[2]);
+
+    g_assert(!mecard->email);
+    mecard_free(mecard);
+}
+
 /* Failure */
 
 static
@@ -116,8 +203,14 @@ int main(int argc, char* argv[])
 {
     g_test_init(&argc, &argv, NULL);
     g_test_add_func(TEST_("null"), test_null);
-    g_test_add_data_func(TEST_("invalid_id"), "foo:", test_failure);
+    g_test_add_data_func(TEST_("empty"),"       ", test_failure);
+    g_test_add_data_func(TEST_("garbage"), "MECARDDDDDD", test_failure);
+    g_test_add_data_func(TEST_("invalid_id/1"), "foo: ;;", test_failure);
+    g_test_add_data_func(TEST_("invalid_id/2"), "MECARDD:", test_failure);
     g_test_add_func(TEST_("basic"), test_basic);
+    g_test_add_func(TEST_("unknown_property"), test_unknown_property);
+    g_test_add_func(TEST_("empty_value"), test_empty_value);
+    g_test_add_func(TEST_("multi_values"), test_multi_values);
     return g_test_run();
 }
 
