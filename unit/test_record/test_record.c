@@ -147,6 +147,30 @@ test_multiple_values(
     mc_record_free(rec);
 }
 
+/* UnescapedUrl */
+
+static
+void
+test_unescaped_url(
+    void)
+{
+    /* As a special case, unescaped color is allowed for URL property */
+    McRecord* rec = mc_record_parse(" test: URL:http://example.com;;");
+
+    g_assert(rec);
+    g_assert_cmpuint(rec->n_prop, ==, 1);
+    g_assert_cmpstr(rec->ident, ==, "test");
+    g_assert_cmpstr(rec->prop[0].name, ==, "URL");
+    g_assert_cmpstr(rec->prop[0].values[0], ==, "http://example.com");
+    g_assert(!rec->prop[0].values[1]);
+    mc_record_free(rec);
+
+    /* But not for other properties (should they be?) */
+    g_assert(!mc_record_parse(" test: UR:http://example.com;;"));
+    g_assert(!mc_record_parse(" test: RL:http://example.com;;"));
+    g_assert(!mc_record_parse(" test: URLL:http://example.com;;"));
+}
+
 /* ValidUtf8 */
 
 static
@@ -247,12 +271,14 @@ int main(int argc, char* argv[])
     g_test_add_data_func(TEST_("invalid_prop/2"), "foo: a", test_failure);
     g_test_add_data_func(TEST_("invalid_prop/3"), "foo: a_", test_failure);
     g_test_add_data_func(TEST_("invalid_prop/4"), "foo: a:\\", test_failure);
+    g_test_add_data_func(TEST_("invalid_prop/5"), "foo: a\t", test_failure);
     g_test_add_data_func(TEST_("no_props/1"), " foo :", test_foo);
     g_test_add_data_func(TEST_("no_props/2"), " foo : ;", test_foo);
     g_test_add_data_func(TEST_("no_props/3"), " foo : ;;", test_foo);
     g_test_add_func(TEST_("basic"), test_basic);
     g_test_add_func(TEST_("empty_value"), test_empty_value);
     g_test_add_func(TEST_("multiple_values"), test_multiple_values);
+    g_test_add_func(TEST_("unescaped_url"), test_unescaped_url);
     g_test_add_func(TEST_("valid_utf8"), test_valid_utf8);
     g_test_add_data_func(TEST_("invalid_utf8/1"),"\xD1", test_invalid_utf8);
     g_test_add_data_func(TEST_("invalid_utf8/2"),"\xD1\xD1",test_invalid_utf8);
