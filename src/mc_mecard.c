@@ -62,7 +62,8 @@ typedef struct me_card_priv {
     McRecord* rec;
 } MeCardPriv;
 
-static const char MECARD[] = "MECARD";
+#define MECARD_ID_LEN (6)
+static const char MECARD_ID[] = "MECARD";
 static const char* MECARD_FIELDS[] = {
     "N",        /* MECARD_FIELD_N */
     "TEL",      /* MECARD_FIELD_TEL */
@@ -77,101 +78,119 @@ static const char* MECARD_FIELDS[] = {
 G_STATIC_ASSERT(sizeof(MeCardFields) == sizeof(MeCard));
 G_STATIC_ASSERT(G_N_ELEMENTS(MECARD_FIELDS) == MECARD_FIELD_COUNT);
 
+static
+MeCard*
+mecard_from_record(
+    McRecord* rec)
+{
+    MeCardPriv* priv;
+    MeCardFields* fields;
+    guint8* ptr;
+    guint count[MECARD_FIELD_COUNT];
+    gboolean combine[MECARD_FIELD_COUNT];
+    gsize total = SIZE_ALIGN(sizeof(MeCardPriv));
+    guint i, k;
+
+    memset(count, 0, sizeof(count));
+    memset(combine, 0, sizeof(combine));
+
+    /*
+     * Count total number of values for each name. The same name may
+     * occur several times and each occasion may have several properties.
+     * If there are several non-empty occasions then we need to allocate
+     * additional storage for combining lists of values.
+     */
+    for (i = 0; i < rec->n_prop; i++) {
+        const McProperty* prop = rec->prop + i;
+
+        for (k = 0; k < MECARD_FIELD_COUNT; k++) {
+            if (!strcmp(MECARD_FIELDS[k], prop->name)) {
+                if (prop->values) {
+                    gsize len = g_strv_length((char**)prop->values);
+
+                    if (len > 0) {
+                        if (count[k]) combine[k] = TRUE;
+                        count[k] += len;
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    for (k = 0; k < MECARD_FIELD_COUNT; k++) {
+        if (combine[k]) {
+            total += SIZE_ALIGN((count[k] + 1) * sizeof(char*));
+        }
+    }
+
+    priv = g_malloc0(total);
+    fields = &priv->data.fields;
+    priv->rec = rec;
+
+    ptr = ((guint8*)priv) + SIZE_ALIGN(sizeof(*priv));
+    for (k = 0; k < MECARD_FIELD_COUNT; k++) {
+        const char* name = MECARD_FIELDS[k];
+
+        if (count[k]) {
+            if (combine[k]) {
+                /* Multiple occasions */
+                McStr* dest = (McStr*)ptr;
+
+                fields->field[k] = (McStr*)ptr;
+                ptr += SIZE_ALIGN((count[k] + 1) * sizeof(char*));
+                for (i = 0; i < rec->n_prop; i++) {
+                    const McProperty* prop = rec->prop + i;
+
+                    if (prop->values && !strcmp(name, prop->name)) {
+                        const McStr* src = prop->values;
+
+                        while (*src) *dest++ = *src++;
+                    }
+                }
+            } else {
+                /* Single occasion */
+                for (i = 0; i < rec->n_prop; i++) {
+                    const McProperty* prop = rec->prop + i;
+
+                    if (prop->values && !strcmp(name, prop->name)) {
+                        gsize len = g_strv_length((char**)prop->values);
+
+                        if (len > 0) {
+                            fields->field[k] = prop->values;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return &priv->data.pub;
+}
+
 MeCard*
 mecard_parse_data(
     const void* data,
     size_t size)
 {
-    McRecord* rec = mc_record_parse_data(data, size);
+    if (data && size > MECARD_ID_LEN) {
+        McBlock blk;
 
-    if (rec) {
-        if (!strcmp(rec->ident, MECARD)) {
-            MeCardPriv* priv;
-            MeCardFields* fields;
-            guint8* ptr;
-            guint count[MECARD_FIELD_COUNT];
-            gboolean combine[MECARD_FIELD_COUNT];
-            gsize total = SIZE_ALIGN(sizeof(MeCardPriv));
-            guint i, k;
+        /* Quick check to see if it makes sense to parse the whole thing */
+        blk.ptr = data;
+        blk.end = blk.ptr + size;
+        if (mc_block_skip_spaces(&blk) &&
+            !memcmp(blk.ptr, MECARD_ID, MECARD_ID_LEN)) {
+            /* Could be an MECARD, give it a shot */
+            McRecord* rec = mc_record_parse_data(blk.ptr, blk.end - blk.ptr);
 
-            memset(count, 0, sizeof(count));
-            memset(combine, 0, sizeof(combine));
-
-            /*
-             * Count total number of values for each name. The same name
-             * can occur several times and each occasion can have several
-             * properties. If there are several non-empty occasions then
-             * we need to allocate additional storage for combining lists
-             * of values.
-             */
-            for (i = 0; i < rec->n_prop; i++) {
-                const McProperty* prop = rec->prop + i;
-
-                for (k = 0; k < MECARD_FIELD_COUNT; k++) {
-                    if (!strcmp(MECARD_FIELDS[k], prop->name)) {
-                        if (prop->values) {
-                            gsize len = g_strv_length((char**)prop->values);
-
-                            if (len > 0) {
-                                if (count[k]) combine[k] = TRUE;
-                                count[k] += len;
-                            }
-                        }
-                        break;
-                    }
+            if (rec) {
+                if (!strcmp(rec->ident, MECARD_ID)) {
+                    return mecard_from_record(rec);
                 }
+                mc_record_free(rec);
             }
-
-            for (k = 0; k < MECARD_FIELD_COUNT; k++) {
-                if (combine[k]) {
-                    total += SIZE_ALIGN((count[k] + 1) * sizeof(char*));
-                }
-            }
-
-            priv = g_malloc0(total);
-            fields = &priv->data.fields;
-            priv->rec = rec;
-
-            ptr = ((guint8*)priv) + SIZE_ALIGN(sizeof(*priv));
-            for (k = 0; k < MECARD_FIELD_COUNT; k++) {
-                const char* name = MECARD_FIELDS[k];
-
-                if (count[k]) {
-                    if (combine[k]) {
-                        /* Multiple occasions */
-                        McStr* dest = (McStr*)ptr;
-
-                        fields->field[k] = (McStr*)ptr;
-                        ptr += SIZE_ALIGN((count[k] + 1) * sizeof(char*));
-                        for (i = 0; i < rec->n_prop; i++) {
-                            const McProperty* prop = rec->prop + i;
-
-                            if (prop->values && !strcmp(name, prop->name)) {
-                                const McStr* src = prop->values;
-
-                                while (*src) *dest++ = *src++;
-                            }
-                        }
-                    } else {
-                        /* Single occasion */
-                        for (i = 0; i < rec->n_prop; i++) {
-                            const McProperty* prop = rec->prop + i;
-
-                            if (prop->values && !strcmp(name, prop->name)) {
-                                gsize len = g_strv_length((char**)prop->values);
-
-                                if (len > 0) {
-                                    fields->field[k] = prop->values;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            return &priv->data.pub;
         }
-        mc_record_free(rec);
     }
     return NULL;
 }

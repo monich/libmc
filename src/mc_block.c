@@ -34,56 +34,63 @@
  * any official policies, either expressed or implied.
  */
 
-#ifndef MC_TYPES_PRIVATE_H
-#define MC_TYPES_PRIVATE_H
+#include "mc_types_p.h"
 
-#include <glib.h>
-#include <string.h>
-
-#include "mc_types.h"
-
-#define SIZE_ALIGN(value) (((value)+7) & ~7)
-
-typedef struct mc_block{
-    const guint8* ptr;
-    const guint8* end;
-} McBlock;
-
-static inline gboolean mc_block_end(const McBlock* blk)
-    { return (blk->ptr >= blk->end); }
-static inline char mc_block_peek(const McBlock* blk)
-    {  return mc_block_end(blk) ? 0 : *blk->ptr; }
-
-G_GNUC_INTERNAL
 gboolean
 mc_block_equals(
     const McBlock* blk,
-    const char* str);
+    const char* str)
+{
+    const guint8* bp = blk->ptr;
+    const guint8* sp = (guint8*)str;
+    while (bp < blk->end && *sp) {
+        if (*sp++ != *bp++) {
+            return FALSE;
+        }
+    }
+    return bp == blk->end && !*sp;
+}
 
-G_GNUC_INTERNAL
 gboolean
 mc_block_skip_spaces(
-    McBlock* blk);
+    McBlock* blk)
+{
+    while (!mc_block_end(blk) && g_ascii_isspace(*blk->ptr)) blk->ptr++;
+    return !mc_block_end(blk);
+}
 
-G_GNUC_INTERNAL
 gboolean
 mc_block_strip_spaces(
-    McBlock* blk);
+    McBlock* blk)
+{
+    while (!mc_block_end(blk) && g_ascii_isspace(blk->end[-1])) blk->end--;
+    return !mc_block_end(blk);
+}
 
-G_GNUC_INTERNAL
 gboolean
 mc_block_skip_until(
     McBlock* blk,
-    guint8 sep);
+    guint8 sep)
+{
+    while (!mc_block_end(blk) && *blk->ptr != sep) blk->ptr++;
+    return !mc_block_end(blk);
+}
 
-G_GNUC_INTERNAL
 gboolean
 mc_block_check(
     const McBlock* blk,
     gboolean (*check)(guchar))
-    G_GNUC_INTERNAL;
+{
+    const guint8* ptr;
 
-#endif /* MC_TYPES_PRIVATE_H */
+    /* Caller makes sure that block is not empty */
+    for (ptr = blk->ptr; ptr < blk->end; ptr++) {
+        if (!check(*ptr)) {
+            return FALSE;
+        }
+    }
+    return TRUE;
+}
 
 /*
  * Local Variables:

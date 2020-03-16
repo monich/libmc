@@ -44,6 +44,7 @@ LIB = $(LIB_NAME).a
 #
 
 SRC = \
+  mc_block.c \
   mc_mecard.c \
   mc_record.c
 
