@@ -1,3 +1,10 @@
+libmc (1.0.1) unstable; urgency=low
+
+  * Allow unescaped ':' in URL blocks
+  * Quick pre-check for MECARD
+
+ -- Slava Monich <slava@monich.com>  Tue, 17 Mar 2020 00:46:24 +0200
+
 libmc (1.0.0) unstable; urgency=low
 
   * Initial release
