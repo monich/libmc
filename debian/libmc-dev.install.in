@@ -1,0 +1,3 @@
+debian/tmp/@LIBDIR@/libmc.so @LIBDIR@
+debian/tmp/@LIBDIR@/pkgconfig/libmc.pc @LIBDIR@/pkgconfig
+debian/tmp/usr/include/* usr/include

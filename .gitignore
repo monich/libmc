@@ -5,6 +5,7 @@ results
 debian/*.log
 debian/*.substvars
 debian/*.debhelper
+debian/*.install
 debian/files
 debian/libmc-dev
 debian/libmc
