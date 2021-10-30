@@ -6,6 +6,8 @@ Group: Development/Libraries
 License: BSD
 URL: https://github.com/monich/libmc
 Source: %{name}-%{version}.tar.bz2
+
+BuildRequires: pkgconfig
 BuildRequires: pkgconfig(glib-2.0)
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
@@ -16,7 +18,6 @@ Provides library for parsing mobile codes e.g. MECARD
 %package devel
 Summary: Development library for %{name}
 Requires: %{name} = %{version}
-Requires: pkgconfig
 
 %description devel
 This package contains the development library for %{name}.
@@ -25,7 +26,7 @@ This package contains the development library for %{name}.
 %setup -q
 
 %build
-make LIBDIR=%{_libdir} KEEP_SYMBOLS=1 release pkgconfig
+make %{_smp_mflags} LIBDIR=%{_libdir} KEEP_SYMBOLS=1 release pkgconfig
 
 %install
 rm -rf %{buildroot}
