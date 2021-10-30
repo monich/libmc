@@ -1,8 +1,8 @@
 Name: libmc
-Version: 1.0.2
+Version: 1.0.3
 Release: 0
+
 Summary: Library for parsing mobile codes
-Group: Development/Libraries
 License: BSD
 URL: https://github.com/monich/libmc
 Source: %{name}-%{version}.tar.bz2

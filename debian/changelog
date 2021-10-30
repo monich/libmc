@@ -1,3 +1,9 @@
+libmc (1.0.3) unstable; urgency=low
+
+  * Fixed lib install path
+
+ -- Slava Monich <slava@monich.com>  Sat, 30 Oct 2021 18:27:59 +0300
+
 libmc (1.0.2) unstable; urgency=low
 
   * Respect arch specific lib dir
