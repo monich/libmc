@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 by Slava Monich <slava@monich.com>
+ * Copyright (C) 2020-2021 by Slava Monich <slava@monich.com>
  *
  * You may use this file under the terms of the BSD license as follows:
  *
@@ -322,7 +322,7 @@ mc_record_parse_value(
                     blk->ptr++;
                     continue;
                 }
-                /* no break */
+                /* fallthrough */
             case ',': case ';': case ':':
                 /*
                  * As a special case, allow unescaped ':' in URL blocks.
