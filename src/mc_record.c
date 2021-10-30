@@ -152,7 +152,7 @@ mc_record_alloc(
 }
 
 /*
- * Identifier = 1*(ALPHA / DIGIT / "-") 
+ * Identifier = 1*(ALPHA / DIGIT / "-")
  * Property-Name = 1*(ALPHA / DIGIT / "-")
  */
 static
