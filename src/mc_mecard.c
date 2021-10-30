@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 by Slava Monich <slava@monich.com>
+ * Copyright (C) 2020-2021 by Slava Monich <slava@monich.com>
  *
  * You may use this file under the terms of the BSD license as follows:
  *
@@ -149,17 +149,14 @@ mecard_from_record(
                     }
                 }
             } else {
-                /* Single occasion */
+                /* Single occasion (and it must be there) */
                 for (i = 0; i < rec->n_prop; i++) {
                     const McProperty* prop = rec->prop + i;
 
-                    if (prop->values && !strcmp(name, prop->name)) {
-                        gsize len = g_strv_length((char**)prop->values);
-
-                        if (len > 0) {
-                            fields->field[k] = prop->values;
-                            break;
-                        }
+                    if (prop->values && prop->values[0] &&
+                        !strcmp(name, prop->name)) {
+                        fields->field[k] = prop->values;
+                        break;
                     }
                 }
             }
