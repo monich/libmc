@@ -1,6 +1,7 @@
 # -*- Mode: makefile-gmake -*-
 
 .PHONY: clean all debug release test
+.PHONY: debug_lib release_lib coverage_lib pkgconfig install install-dev
 .PHONY: print_debug_lib print_release_lib print_coverage_lib
 
 #
@@ -21,7 +22,7 @@ all: debug release pkgconfig
 
 VERSION_MAJOR = 1
 VERSION_MINOR = 0
-VERSION_RELEASE = 3
+VERSION_RELEASE = 4
 
 # Version for pkg-config
 PCVERSION = $(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_RELEASE)
