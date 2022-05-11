@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 by Slava Monich <slava@monich.com>
+ * Copyright (C) 2020-2022 by Slava Monich <slava@monich.com>
  *
  * You may use this file under the terms of the BSD license as follows:
  *
@@ -65,6 +65,7 @@ test_basic(
     /* Example from OMA-TS-MC-V1_0-20130611-A */
     MeCard* mecard = mecard_parse("MECARD:"
         "N:Bill Jones;"
+        "ORG:Test org;"
         "TEL:+18586230741;"
         "TEL:+18586230742;"
         "EMAIL:foo@openmobilealliance.org;"
@@ -90,6 +91,10 @@ test_basic(
     g_assert(mecard->url);
     g_assert_cmpstr(mecard->url[0], == ,"http://www.openmobilealliance.org");
     g_assert(!mecard->url[1]);
+
+    g_assert(mecard->org);
+    g_assert_cmpstr(mecard->org[0], == ,"Test org");
+    g_assert(!mecard->org[1]);
 
     g_assert(!mecard->bday);
     g_assert(!mecard->adr);

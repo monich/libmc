@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020-2021 by Slava Monich <slava@monich.com>
+ * Copyright (C) 2020-2022 by Slava Monich <slava@monich.com>
  *
  * You may use this file under the terms of the BSD license as follows:
  *
@@ -47,6 +47,7 @@ enum me_card_field {
     MECARD_FIELD_NOTE,
     MECARD_FIELD_URL,
     MECARD_FIELD_NICKNAME,
+    MECARD_FIELD_ORG,
     MECARD_FIELD_COUNT
 };
 
@@ -72,7 +73,8 @@ static const char* MECARD_FIELDS[] = {
     "ADR",      /* MECARD_FIELD_ADR */
     "NOTE",     /* MECARD_FIELD_NOTE */
     "URL",      /* MECARD_FIELD_URL */
-    "NICKNAME"  /* MECARD_FIELD_NICKNAME */
+    "NICKNAME", /* MECARD_FIELD_NICKNAME */
+    "ORG"       /* MECARD_FIELD_ORG */
 };
 
 G_STATIC_ASSERT(sizeof(MeCardFields) == sizeof(MeCard));

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 by Slava Monich <slava@monich.com>
+ * Copyright (C) 2020-2022 by Slava Monich <slava@monich.com>
  *
  * You may use this file under the terms of the BSD license as follows:
  *
@@ -50,6 +50,7 @@ struct me_card {
     const McStr* note;
     const McStr* url;
     const McStr* nickname;
+    const McStr* org; /* Since 1.0.4 */
 };
 
 MeCard*
