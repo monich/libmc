@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 by Slava Monich <slava@monich.com>
+ * Copyright (C) 2020-2022 by Slava Monich <slava@monich.com>
  *
  * You may use this file under the terms of the BSD license as follows:
  *
@@ -54,29 +54,28 @@ static inline gboolean mc_block_end(const McBlock* blk)
 static inline char mc_block_peek(const McBlock* blk)
     {  return mc_block_end(blk) ? 0 : *blk->ptr; }
 
-G_GNUC_INTERNAL
 gboolean
 mc_block_equals(
     const McBlock* blk,
-    const char* str);
+    const char* str)
+    G_GNUC_INTERNAL;
 
-G_GNUC_INTERNAL
 gboolean
 mc_block_skip_spaces(
-    McBlock* blk);
+    McBlock* blk)
+    G_GNUC_INTERNAL;
 
-G_GNUC_INTERNAL
 gboolean
 mc_block_strip_spaces(
-    McBlock* blk);
+    McBlock* blk)
+    G_GNUC_INTERNAL;
 
-G_GNUC_INTERNAL
 gboolean
 mc_block_skip_until(
     McBlock* blk,
-    guint8 sep);
+    guint8 sep)
+    G_GNUC_INTERNAL;
 
-G_GNUC_INTERNAL
 gboolean
 mc_block_check(
     const McBlock* blk,
