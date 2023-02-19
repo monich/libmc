@@ -150,7 +150,7 @@ clean:
 	rm -fr unit/coverage/results unit/coverage/*.gcov
 	rm -f *~ */*~
 	rm -fr $(BUILD_DIR) RPMS installroot debian/tmp
-	rm -fr debian/libmc debian/libmc-dev
+	rm -fr debian/libmc debian/libmc-dev debian/.debhelper
 	rm -f documentation.list debian/files debian/*.substvars
 	rm -f debian/*.debhelper.log debian/*.debhelper debian/*~
 	rm -f debian/*install
