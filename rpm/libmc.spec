@@ -1,5 +1,6 @@
 Name: libmc
-Version: 1.0.4
+
+Version: 1.0.5
 Release: 0
 
 Summary: Library for parsing mobile codes
